@@ -1,3 +1,6 @@
 <resources>
-    <string name="app_name">android_restaurant</string>
+    <string name="app_name">My Restaurant</string>
+
+    <string name="FACEBOOK_APP_ID">729240680847955</string>
+    <string name="ACCOUNT_KIT_CLIENT_TOKEN">2635421a83a44e3770569aa8ec370c2e</string>
 </resources>
