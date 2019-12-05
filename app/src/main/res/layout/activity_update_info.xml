@@ -109,4 +109,5 @@
         android:background="@drawable/border_button"
         android:textColor="@android:color/white"
         android:fontFamily="@font/magnifika"/>
+
 </LinearLayout>
