@@ -4,12 +4,15 @@ import android.content.Intent;
 import android.os.Bundle;
 
 import com.example.android_restaurant.Common.Common;
+import com.example.android_restaurant.Retrofit.IMyRestaurantAPI;
+import com.example.android_restaurant.Retrofit.RetrofitClient;
 import com.facebook.accountkit.AccountKit;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 
 import android.view.View;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.core.view.GravityCompat;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 
@@ -21,11 +24,37 @@ import androidx.drawerlayout.widget.DrawerLayout;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.recyclerview.widget.DividerItemDecoration;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import android.view.Menu;
+import android.widget.TextView;
+
+import butterknife.BindView;
+import butterknife.ButterKnife;
+import dmax.dialog.SpotsDialog;
+import io.reactivex.disposables.CompositeDisposable;
+import ss.com.bannerslider.Slider;
 
 public class HomeActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
+
+    TextView txt_user_name, txt_user_phone;
+    @BindView(R.id.banner_slider)
+    Slider banner_slider;
+    @BindView(R.id.recycler_restaurant)
+    RecyclerView recycler_restaurant;
+
+    IMyRestaurantAPI myRestaurantAPI;
+    CompositeDisposable compositeDisposable = new CompositeDisposable();
+    android.app.AlertDialog dialog;
+
+    @Override
+    protected void onDestroy() {
+        compositeDisposable.clear();
+        super.onDestroy();
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,14 +62,7 @@ public class HomeActivity extends AppCompatActivity
         setContentView(R.layout.activity_home);
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        FloatingActionButton fab = findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-            }
-        });
+
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
         NavigationView navigationView = findViewById(R.id.nav_view);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
@@ -48,6 +70,17 @@ public class HomeActivity extends AppCompatActivity
         drawer.addDrawerListener(toggle);
         toggle.syncState();
         navigationView.setNavigationItemSelectedListener(this);
+        navigationView.setCheckedItem(R.id.nav_home);
+
+        View headerView = navigationView.getHeaderView(0);
+        txt_user_name = (TextView)headerView.findViewById(R.id.txt_user_name);
+        txt_user_phone = (TextView)headerView.findViewById(R.id.txt_user_phone);
+
+        txt_user_name.setText(Common.currentUser.getName());
+        txt_user_phone.setText(Common.currentUser.getUserPhone());
+
+        initialize();
+        initializeView();
     }
 
     @Override
@@ -89,16 +122,12 @@ public class HomeActivity extends AppCompatActivity
         int id = item.getItemId();
 
         if (id == R.id.nav_home) {
-            // Handle the camera action
-        } else if (id == R.id.nav_gallery) {
 
-        } else if (id == R.id.nav_slideshow) {
+        } else if (id == R.id.nav_nearby) {
 
-        } else if (id == R.id.nav_tools) {
+        } else if (id == R.id.nav_order_history) {
 
-        } else if (id == R.id.nav_share) {
-
-        } else if (id == R.id.nav_send) {
+        } else if (id == R.id.nav_update_info) {
 
         } else if (id == R.id.nav_sign_out) {
             signOut();
@@ -109,14 +138,36 @@ public class HomeActivity extends AppCompatActivity
         return true;
     }
 
-    private void signOut() {
-        Common.currentUser = null;
+    private void initialize() {
+        dialog = new SpotsDialog.Builder().setCancelable(false).setContext(this).build();
+        myRestaurantAPI = RetrofitClient.getInstance(Common.API_RESTAURANT_ENDPOINT).create(IMyRestaurantAPI.class);
+    }
 
-        AccountKit.logOut();
-        Intent intent = new Intent(HomeActivity.this, MainActivity.class);
-        // Clear all previous activity
-        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
-        startActivity(intent);
-        finish();
+    private void initializeView() {
+        ButterKnife.bind(this);
+
+        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this);
+        recycler_restaurant.setLayoutManager(linearLayoutManager);
+        recycler_restaurant.addItemDecoration(new DividerItemDecoration(this, linearLayoutManager.getOrientation()));
+    }
+
+    private void signOut() {
+        // Here we will make alert dialog to confirm
+        AlertDialog confirmDialog = new AlertDialog.Builder(this)
+                .setTitle("Sign Out")
+                .setMessage("Do you really want to sign out?")
+                .setNegativeButton("CANCEL", (dialog, which) -> dialog.dismiss())
+                .setPositiveButton("OK", (dialog, which) -> {
+                    Common.currentUser = null;
+
+                    AccountKit.logOut();
+                    Intent intent = new Intent(HomeActivity.this, MainActivity.class);
+                    // Clear all previous activity
+                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                    startActivity(intent);
+                    finish();
+                }).create();
+
+        confirmDialog.show();
     }
 }
