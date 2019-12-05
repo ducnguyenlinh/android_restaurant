@@ -58,4 +58,7 @@ dependencies {
     // Lombok
     implementation 'org.projectlombok:lombok:1.18.10'
     annotationProcessor 'org.projectlombok:lombok:1.18.10'
+
+    // Slider
+    implementation 'com.ss.bannerslider:bannerslider:2.0.0'
 }

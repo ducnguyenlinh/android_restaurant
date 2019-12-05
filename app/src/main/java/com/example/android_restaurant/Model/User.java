@@ -4,8 +4,8 @@ import lombok.Data;
 
 @Data
 public class User {
-    private String fbid;
-    private String userPhone;
-    private String userName;
-    private String userAddress;
+    private String FBID;
+    private String UserPhone;
+    private String Name;
+    private String Address;
 }
